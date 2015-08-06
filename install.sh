@@ -7,7 +7,7 @@ if [ -z $INSTANCE_ID ]; then
 fi
 
 if [ -z $INSTANCE_ID ]; then
-  echo Unable to retrieve instance-id. Are you running this script on a AWS EC2 instance?
+  logger -s Unable to retrieve instance-id. Are you running this script on a AWS EC2 instance?
   exit 1
 fi
 
@@ -16,13 +16,42 @@ if [ -z $AWS_REGION ]; then
   AWS_REGION=${AWS_REGION:0:-1}
 fi
 
-if [ -z $TAG_KEY ]; then
-  TAG_KEY=Components
+if [ -z $COMP_TAG_KEY ]; then
+  COMP_TAG_KEY=Components
 fi
 
-echo Initializing Instance $INSTANCE_ID in $AWS_REGION
+if [ -z $ENV_TAG_KEY ]; then
+  ENV_TAG_KEY=Environment
+fi
+
+if [ -z $ENV ]; then
+  ENV=$(aws ec2 describe-tags \
+    --filter Name=resource-id,Values=$INSTANCE_ID Name=key,Values=$ENV_TAG_KEY \
+    --region $AWS_REGION \
+    --output text | grep -o '[[:alnum:]-]*' | tail -n+5)
+fi
+
+if [ -z $ENV ]; then
+  logger -s Missing Tag $ENV_TAG_KEY
+  exit 1
+fi
+
+if [ -z $COMP_INSTALLER_URL ]; then
+  logger -s No Component Installer defined
+  exit 1
+fi
+
+logger -s Initializing Instance $INSTANCE_ID in $AWS_REGION
 
 aws ec2 describe-tags \
-  --filter Name=resource-id,Values=$INSTANCE_ID Name=key,Values=$TAG_KEY \
+  --filter Name=resource-id,Values=$INSTANCE_ID Name=key,Values=$COMP_TAG_KEY \
   --region $AWS_REGION \
-  --output text | grep -o '[[:alnum:]-]*' | tail -n+5
+  --output text | grep -o '[[:alnum:]-]*' | tail -n+5 | while read -r COMP;
+do
+  logger -s Installing $COMP...
+  wget -qO- $COMP_INSTALLER_URL | bash -s $COMP $ENV
+  if [ $? != 0 ]; then
+    logger -s Error while installing $COMP
+    exit $?
+  fi
+done
