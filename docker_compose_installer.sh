@@ -24,7 +24,8 @@ TMP=https://raw.githubusercontent.com/andasa-de/CloudInit/master/initd.j2
 SRC=$AWS_S3_PREFIX/$ENV/$COMP.yml
 DST=$INSTALL_DIR/$COMP.yml
 
-wget -qO- $ENG | python $TMP --component=$COMP --components_path=$INSTALL_DIR --region=$AWS_REGION --yml_src=$SRC > /etc/init.d/$COMP
+wget -qO- $ENG > j2render.py
+python j2render.py $TMP --component=$COMP --components_path=$INSTALL_DIR --region=$AWS_REGION --yml_src=$SRC > /etc/init.d/$COMP
 chmod +x /etc/init.d/$COMP
 update-rc.d $COMP defaults
 
