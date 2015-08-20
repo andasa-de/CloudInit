@@ -11,9 +11,8 @@
 
 set -e
 
-PROJECT_NAME={{ project }}
 YAMLFILE={{ components_path }}/{{ component }}.yml
-OPTS="-f $YAMLFILE -p $PROJECT_NAME"
+OPTS="-f $YAMLFILE"
 UPOPTS="-d --no-recreate --no-build --no-deps"
 
 . /lib/lsb/init-functions
@@ -38,9 +37,13 @@ case "$1" in
         docker-compose $OPTS stop
         docker-compose $OPTS up $UPOPTS
         ;;
-
+    update)
+        log_daemon_msg "Updating docker images" "dockercompose" || true
+        aws s3 --region {{ region }} cp {{ yml_src }} $YAMLFILE
+        docker-compose $OPTS pull
+        ;;
     *)
-        log_action_msg "Usage: /etc/init.d/dockercompose {start|stop|restart|reload}" || true
+        log_action_msg "Usage: /etc/init.d/dockercompose {start|stop|restart|reload|update}" || true
         exit 1
         ;;
 esac

@@ -27,11 +27,14 @@ fi
 
 mkdir -p $INSTALL_DIR
 
+ENG=https://raw.githubusercontent.com/andasa-de/CloudInit/master/j2render.py
+TMP=https://raw.githubusercontent.com/andasa-de/CloudInit/master/initd.j2
 SRC=$AWS_S3_PREFIX/$ENV/$COMP.yml
 DST=$INSTALL_DIR/$COMP.yml
-echo "Copying $SRC -> $DST"
-aws s3 cp $SRC $DST
 
-wget -qO- https://raw.githubusercontent.com/andasa-de/CloudInit/master/render_initd.py | python $COMP $INSTALL_DIR "_" > /etc/init.d/$COMP
+wget -qO- $ENG | python $TMP --component=$COMP --components_path=$INSTALL_DIR --region=$AWS_REGION --yml_src=$SRC > /etc/init.d/$COMP
+chmod +x /etc/init.d/$COMP
 update-rc.d
+
+/etc/init.d/$COMP update
 /etc/init.d/$COMP start

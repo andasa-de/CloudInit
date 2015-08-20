@@ -42,6 +42,7 @@ fi
 
 logger -s Initializing Instance $INSTANCE_ID in $AWS_REGION
 
+export AWS_REGION
 aws ec2 describe-tags \
   --filter Name=resource-id,Values=$INSTANCE_ID Name=key,Values=$COMP_TAG_KEY \
   --region $AWS_REGION \
