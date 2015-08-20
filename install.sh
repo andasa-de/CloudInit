@@ -37,8 +37,7 @@ if [ -z $ENV ]; then
 fi
 
 if [ -z $COMP_INSTALLER_URL ]; then
-  logger -s No Component Installer defined
-  exit 1
+  COMP_INSTALLER_URL=https://raw.githubusercontent.com/andasa-de/CloudInit/master/docker_compose_installer.sh
 fi
 
 logger -s Initializing Instance $INSTANCE_ID in $AWS_REGION
