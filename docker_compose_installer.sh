@@ -17,14 +17,6 @@ if [ -z $INSTALL_DIR ]; then
   INSTALL_DIR=/components
 fi
 
-if [[ -z $(pip list | grep Jinja2) ]]; then
-  pip install Jinja2
-fi
-
-if [[ -z $(pip list | grep requests) ]]; then
-  pip install requests
-fi
-
 mkdir -p $INSTALL_DIR
 
 ENG=https://raw.githubusercontent.com/andasa-de/CloudInit/master/j2render.py
@@ -34,7 +26,7 @@ DST=$INSTALL_DIR/$COMP.yml
 
 wget -qO- $ENG | python $TMP --component=$COMP --components_path=$INSTALL_DIR --region=$AWS_REGION --yml_src=$SRC > /etc/init.d/$COMP
 chmod +x /etc/init.d/$COMP
-update-rc.d
+update-rc.d $COMP defaults
 
 /etc/init.d/$COMP update
 /etc/init.d/$COMP start
