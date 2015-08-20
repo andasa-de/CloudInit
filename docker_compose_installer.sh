@@ -31,3 +31,7 @@ SRC=$AWS_S3_PREFIX/$ENV/$COMP.yml
 DST=$INSTALL_DIR/$COMP.yml
 echo "Copying $SRC -> $DST"
 aws s3 cp $SRC $DST
+
+wget -qO- https://raw.githubusercontent.com/andasa-de/CloudInit/master/render_initd.py | python $COMP $INSTALL_DIR "_" > /etc/init.d/$COMP
+update-rc.d
+/etc/init.d/$COMP start
