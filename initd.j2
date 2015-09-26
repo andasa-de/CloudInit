@@ -11,6 +11,7 @@
 
 set -e
 
+COMP={{ component }}
 YAMLFILE={{ components_path }}/{{ component }}.yml
 OPTS="-f $YAMLFILE"
 UPOPTS="-d --no-recreate --no-build --no-deps"
@@ -39,8 +40,17 @@ case "$1" in
         ;;
     update)
         log_daemon_msg "Updating docker images" "dockercompose" || true
-        aws s3 --region {{ region }} cp {{ yml_src }} $YAMLFILE
-        docker-compose $OPTS pull
+        aws s3 --region {{ region }} cp {{ yml_src }} /var/tmp/$COMP
+	NEWMD5=$(md5sum /var/tmp/$COMP | awk '{print $1}')
+	OLDMD5=$(md5sum {{ yml_src }} | awk '{print $1}')
+        if [ "$NEWMD5" -ne "$OLDMD5" ]; then
+          docker-compose -f /var/tmp/$COMP pull
+          docker-compose $OPTS stop
+          mv -f /var/tmp/$COMP {{ yml_src }}
+          docker-compose $OPTS up $UPOPTS
+        else
+          rm -f /var/tmp/$COMP
+        fi
         ;;
     *)
         log_action_msg "Usage: /etc/init.d/dockercompose {start|stop|restart|reload|update}" || true
