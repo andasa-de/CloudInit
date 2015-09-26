@@ -41,15 +41,20 @@ case "$1" in
     update)
         log_daemon_msg "Updating docker images" "dockercompose" || true
         aws s3 --region {{ region }} cp {{ yml_src }} /var/tmp/$COMP
-	NEWMD5=$(md5sum /var/tmp/$COMP | awk '{print $1}')
-	OLDMD5=$(md5sum {{ yml_src }} | awk '{print $1}')
-        if [ "$NEWMD5" -ne "$OLDMD5" ]; then
-          docker-compose -f /var/tmp/$COMP pull
-          docker-compose $OPTS stop
-          mv -f /var/tmp/$COMP {{ yml_src }}
+        if [ ! -f $YAMLFILE ]; then
+          mv -f /var/tmp/$COMP $YAMLFILE
           docker-compose $OPTS up $UPOPTS
-        else
-          rm -f /var/tmp/$COMP
+        else 
+          NEWMD5=$(md5sum /var/tmp/$COMP | awk '{print $1}')
+          OLDMD5=$(md5sum $YAMLFILE | awk '{print $1}')
+          if [ "$NEWMD5" -ne "$OLDMD5" ]; then
+            docker-compose -f /var/tmp/$COMP pull
+            docker-compose $OPTS stop
+            mv -f /var/tmp/$COMP $YAMLFILE
+            docker-compose $OPTS up $UPOPTS
+          else
+            rm -f /var/tmp/$COMP
+          fi
         fi
         ;;
     *)
