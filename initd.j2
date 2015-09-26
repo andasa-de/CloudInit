@@ -47,7 +47,7 @@ case "$1" in
         else 
           NEWMD5=$(md5sum /var/tmp/$COMP | awk '{print $1}')
           OLDMD5=$(md5sum $YAMLFILE | awk '{print $1}')
-          if [ "$NEWMD5" -ne "$OLDMD5" ]; then
+          if [ "$NEWMD5" != "$OLDMD5" ]; then
             docker-compose -f /var/tmp/$COMP pull
             docker-compose $OPTS stop
             mv -f /var/tmp/$COMP $YAMLFILE
