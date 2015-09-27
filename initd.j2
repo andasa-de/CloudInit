@@ -50,6 +50,7 @@ case "$1" in
           if [ "$NEWMD5" != "$OLDMD5" ]; then
             docker-compose -f /var/tmp/$COMP pull
             docker-compose $OPTS stop
+            docker-compose $OPTS rm -f
             mv -f /var/tmp/$COMP $YAMLFILE
             docker-compose $OPTS up $UPOPTS
           else
