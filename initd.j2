@@ -11,6 +11,7 @@
 
 set -e
 
+export PATH=$PATH:/usr/local/bin # this is where docker-compose gets installed
 COMP={{ component }}
 YAMLFILE={{ components_path }}/{{ component }}.yml
 OPTS="-f $YAMLFILE"
@@ -20,17 +21,17 @@ UPOPTS="-d --no-recreate --no-build --no-deps"
 
 case "$1" in
     start)
-        log_daemon_msg "Starting Docker Compose" "dockercompose" || true
+        log_daemon_msg "Starting {{ component }}" "{{ component }}" || true
         docker-compose $OPTS up $UPOPTS
         ;;
 
     stop)
-        log_daemon_msg "Stopping Docker Compose" "dockercompose" || true
+        log_daemon_msg "Stopping {{ component }}" "{{ component }}" || true
         docker-compose $OPTS stop
         ;;
 
     reload)
-        log_daemon_msg "Reloading Docker Compose" "dockercompose" || true
+        log_daemon_msg "Reloading {{ component }}" "{{ component }}" || true
         docker-compose $OPTS up $UPOPTS
         ;;
 
@@ -39,7 +40,7 @@ case "$1" in
         docker-compose $OPTS up $UPOPTS
         ;;
     update)
-        log_daemon_msg "Updating docker images" "dockercompose" || true
+        log_daemon_msg "Updating {{ component }}" "{{ component }}" || true
         aws s3 --region {{ region }} cp {{ yml_src }} /var/tmp/$COMP
         if [ ! -f $YAMLFILE ]; then
           mv -f /var/tmp/$COMP $YAMLFILE
@@ -59,7 +60,7 @@ case "$1" in
         fi
         ;;
     *)
-        log_action_msg "Usage: /etc/init.d/dockercompose {start|stop|restart|reload|update}" || true
+        log_action_msg "Usage: /etc/init.d/{{ component }} {start|stop|restart|reload|update}" || true
         exit 1
         ;;
 esac
