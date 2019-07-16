@@ -72,6 +72,9 @@ aws ec2 describe-tags \
 do
   logger -s Installing $COMP...
   docker-compose-install $COMP
+  if [[ $COMP == "proxy" ]]; then
+    (crontab -l ; echo "*/10 * * * * sudo /etc/init.d/${COMP} restart") | sort - | uniq - | crontab -
+  fi
   if [ $? != 0 ]; then
     logger -s Error while installing $COMP
     exit $?
